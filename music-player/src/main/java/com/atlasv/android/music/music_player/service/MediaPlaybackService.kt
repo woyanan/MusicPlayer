@@ -8,6 +8,9 @@ import androidx.media.MediaBrowserServiceCompat
  * Created by woyanan on 2020-02-10
  */
 class MediaPlaybackService : MediaBrowserServiceCompat() {
+    companion object {
+        private const val BROWSER_ROOT_ID = "/"
+    }
 
     override fun onLoadChildren(
         parentId: String,
@@ -21,6 +24,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-
+        return BrowserRoot(BROWSER_ROOT_ID, null)
     }
 }
