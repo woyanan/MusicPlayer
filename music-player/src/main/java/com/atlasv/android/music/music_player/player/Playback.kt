@@ -17,21 +17,13 @@ interface Playback {
 
     fun getAudioSessionId(): Int
 
-    fun start()
-
     fun stop(notifyListeners: Boolean)
-
-    fun updateLastKnownStreamPosition()
 
     fun play(mediaResource: MediaResource, isPlayWhenReady: Boolean)
 
     fun pause()
 
     fun seekTo(position: Long)
-
-    fun onFastForward()
-
-    fun onRewind()
 
     fun setCallback(callback: PlaybackCallback)
 }

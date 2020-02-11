@@ -24,7 +24,7 @@ class CacheManager constructor(
     /**
      * 创建缓存文件夹
      */
-    fun getDownloadDirectory(context: Context): File {
+    private fun getDownloadDirectory(context: Context): File {
         if (!cacheDestFileDir.isNullOrEmpty()) {
             downloadDirectory = File(cacheDestFileDir)
             if (!downloadDirectory!!.exists()) {

@@ -1,4 +1,4 @@
-package com.atlasv.android.music.music_player.provider
+package com.atlasv.android.music.player.bean
 
 import android.graphics.Bitmap
 import android.os.Parcelable

@@ -2,31 +2,20 @@ package com.atlasv.android.music.music_player.player
 
 import android.content.Context
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import com.atlasv.android.music.music_player.provider.MediaResource
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
-import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
-import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
-import com.google.android.exoplayer2.util.EventLogger
 
 /**
  * Created by woyanan on 2020-02-10
  */
 open class ExoPlayback internal constructor(
-    var context: Context,
-    private var cacheManager: CacheManager
+    private val context: Context
 ) : Playback {
-    private val trackSelectorParameters: DefaultTrackSelector.Parameters by lazy {
-        DefaultTrackSelector.ParametersBuilder().build()
-    }
     private val mEventListener by lazy {
         ExoPlayerEventListener()
     }
+    private var cacheManager = CacheManager(context, true, null)
     private val sourceManager: ExoSourceManager by lazy {
         ExoSourceManager(context, cacheManager)
     }
@@ -35,12 +24,6 @@ open class ExoPlayback internal constructor(
     private var mCallback: PlaybackCallback? = null
     private var mExoPlayerNullIsStopped = false
     private var mExoPlayer: SimpleExoPlayer? = null
-
-    companion object {
-        private val TAG = javaClass.simpleName
-        const val ACTION_CHANGE_VOLUME = "ACTION_CHANGE_VOLUME"
-        const val ACTION_DERAILLEUR = "ACTION_DERAILLEUR"
-    }
 
     override var state: Int
         get() = if (mExoPlayer == null) {
@@ -91,16 +74,8 @@ open class ExoPlayback internal constructor(
         return mExoPlayer?.audioSessionId ?: 0
     }
 
-    override fun start() {
-        // Nothing to do.
-    }
-
     override fun stop(notifyListeners: Boolean) {
         releaseResources(true)
-    }
-
-    override fun updateLastKnownStreamPosition() {
-        // Nothing to do. Position maintained by ExoPlayer.
     }
 
     override fun play(mediaResource: MediaResource, isPlayWhenReady: Boolean) {
@@ -109,17 +84,7 @@ open class ExoPlayback internal constructor(
         if (mediaId.isNullOrEmpty()) {
             return
         }
-        val mediaHasChanged = mediaId != currentMediaId
-        if (mediaHasChanged) {
-            currentMediaId = mediaId
-        }
-        Log.d(
-            TAG,
-            "Playback# resource is empty = " + mediaResource.getMediaUrl().isNullOrEmpty() +
-                    " mediaHasChanged = " + mediaHasChanged +
-                    " isPlayWhenReady = " + isPlayWhenReady
-        )
-        if (mediaHasChanged || mExoPlayer == null) {
+        if (mExoPlayer == null) {
             releaseResources(false)  // release everything except the player
             var source = mediaResource.getMediaUrl()
             if (source.isNullOrEmpty()) {
@@ -129,45 +94,32 @@ open class ExoPlayback internal constructor(
             source = source.replace(" ".toRegex(), "%20") // Escape spaces for URLs
 
             if (mExoPlayer == null) {
-                //轨道选择
-                val trackSelectionFactory = AdaptiveTrackSelection.Factory()
+                val uAmpAudioAttributes = AudioAttributes.Builder()
+                    .setContentType(C.CONTENT_TYPE_MUSIC)
+                    .setUsage(C.USAGE_MEDIA)
+                    .build()
 
-                //使用扩展渲染器的模式
-                @DefaultRenderersFactory.ExtensionRendererMode
-                val extensionRendererMode = DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
-                val renderersFactory = DefaultRenderersFactory(context, extensionRendererMode)
-
-                //轨道选择
-                val trackSelector = DefaultTrackSelector(trackSelectionFactory)
-                trackSelector.parameters = trackSelectorParameters
-
-                val drmSessionManager: DefaultDrmSessionManager<FrameworkMediaCrypto>? = null
-
-                mExoPlayer = ExoPlayerFactory.newSimpleInstance(
-                    context, renderersFactory,
-                    trackSelector, drmSessionManager
-                )
-
-                mExoPlayer!!.addListener(mEventListener)
-                mExoPlayer!!.addAnalyticsListener(EventLogger(trackSelector))
-
+                mExoPlayer = ExoPlayerFactory.newSimpleInstance(context).apply {
+                    setAudioAttributes(uAmpAudioAttributes, true)
+                }
                 val audioAttributes = AudioAttributes.Builder()
                     .setContentType(C.CONTENT_TYPE_MUSIC)
                     .setUsage(C.USAGE_MEDIA)
                     .build()
-                mExoPlayer!!.setAudioAttributes(audioAttributes, true) //第二个参数能使ExoPlayer自动管理焦点
+                mExoPlayer?.setAudioAttributes(audioAttributes, true)
+                mExoPlayer?.addListener(mEventListener)
             }
             val mediaSource = sourceManager.buildMediaSource(
                 source,
-                mediaResource.getMapHeadData(),
+                null,
                 cacheManager.isOpenCache(),
                 cacheManager.getDownloadCache()
             )
-            mExoPlayer!!.prepare(mediaSource)
+            mExoPlayer?.prepare(mediaSource)
         }
 
         if (isPlayWhenReady) {
-            mExoPlayer!!.playWhenReady = true
+            mExoPlayer?.playWhenReady = true
         }
     }
 
@@ -178,27 +130,6 @@ open class ExoPlayback internal constructor(
 
     override fun seekTo(position: Long) {
         mExoPlayer?.seekTo(position)
-    }
-
-    override fun onFastForward() {
-        if (mExoPlayer != null) {
-            val currSpeed = mExoPlayer!!.playbackParameters.speed
-            val currPitch = mExoPlayer!!.playbackParameters.pitch
-            val newSpeed = currSpeed + 0.5f
-            mExoPlayer!!.playbackParameters = PlaybackParameters(newSpeed, currPitch)
-        }
-    }
-
-    override fun onRewind() {
-        if (mExoPlayer != null) {
-            val currSpeed = mExoPlayer!!.playbackParameters.speed
-            val currPitch = mExoPlayer!!.playbackParameters.pitch
-            var newSpeed = currSpeed - 0.5f
-            if (newSpeed <= 0) {
-                newSpeed = 0f
-            }
-            mExoPlayer!!.playbackParameters = PlaybackParameters(newSpeed, currPitch)
-        }
     }
 
     override fun setCallback(callback: PlaybackCallback) {
@@ -216,19 +147,6 @@ open class ExoPlayback internal constructor(
     }
 
     private inner class ExoPlayerEventListener : Player.EventListener {
-        override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-            // Nothing to do.
-        }
-
-        override fun onTracksChanged(
-            trackGroups: TrackGroupArray?, trackSelections: TrackSelectionArray?
-        ) {
-            // Nothing to do.
-        }
-
-        override fun onLoadingChanged(isLoading: Boolean) {
-            // Nothing to do.
-        }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
@@ -246,26 +164,6 @@ open class ExoPlayback internal constructor(
                 else -> "Unknown: $error"
             }
             mCallback?.onError("ExoPlayer error $what")
-        }
-
-        override fun onPositionDiscontinuity(reason: Int) {
-            // Nothing to do.
-        }
-
-        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-            // Nothing to do.
-        }
-
-        override fun onSeekProcessed() {
-            // Nothing to do.
-        }
-
-        override fun onRepeatModeChanged(repeatMode: Int) {
-            // Nothing to do.
-        }
-
-        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-            // Nothing to do.
         }
     }
 }

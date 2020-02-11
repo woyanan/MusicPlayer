@@ -8,7 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
-import com.atlasv.android.music.music_player.provider.SongInfo
+import com.atlasv.android.music.music_player.MusicPlayer
+import com.atlasv.android.music.player.bean.SongInfo
 import com.bumptech.glide.Glide
 import java.util.*
 
@@ -25,10 +26,6 @@ class ListAdapter(private val context: Context) :
         notifyDataSetChanged()
     }
 
-    fun getSongInfos(): List<SongInfo> {
-        return mSongInfos
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view: View =
             LayoutInflater.from(parent.context).inflate(R.layout.item_list, parent, false)
@@ -43,21 +40,24 @@ class ListAdapter(private val context: Context) :
         val songInfo = mSongInfos[position]
         Glide.with(context).load(songInfo.songCover).into(holder.cover)
         holder.title.text = songInfo.songName
+        holder.itemView.setOnClickListener {
+            MusicPlayer.getInstance(holder.itemView.context).onPlay(songInfo.songId)
+        }
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int, payloads: MutableList<Any>) {
         super.onBindViewHolder(holder, position, payloads)
-        val songInfo = mSongInfos[position]
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position)
-        } else {
-
-        }
+//        val songInfo = mSongInfos[position]
+//        if (payloads.isEmpty()) {
+//            onBindViewHolder(holder, position)
+//        } else {
+//
+//        }
     }
 
     class Holder(@NonNull itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var cover = itemView.findViewById<ImageView>(R.id.cover)
-        var title = itemView.findViewById<TextView>(R.id.title)
-        var state = itemView.findViewById<TextView>(R.id.state)
+        val cover = itemView.findViewById<ImageView>(R.id.cover)
+        val title = itemView.findViewById<TextView>(R.id.title)
+        val state = itemView.findViewById<TextView>(R.id.state)
     }
 }

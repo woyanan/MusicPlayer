@@ -1,6 +1,6 @@
 package com.atlasv.android.music.player
 
-import com.atlasv.android.music.music_player.provider.SongInfo
+import com.atlasv.android.music.player.bean.SongInfo
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -62,7 +62,8 @@ class ApiRequest {
                     val list: MutableList<SongInfo> = ArrayList()
                     for (i in 0 until jsonArray.length()) {
                         val `object` = jsonArray.getJSONObject(i)
-                        val info = SongInfo()
+                        val info =
+                            SongInfo()
                         info.songId = `object`.getString("song_id")
                         info.songCover = `object`.getString("pic_big")
                         info.songName = `object`.getString("title")

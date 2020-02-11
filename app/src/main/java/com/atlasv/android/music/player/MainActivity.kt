@@ -3,7 +3,7 @@ package com.atlasv.android.music.player
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.atlasv.android.music.music_player.provider.SongInfo
+import com.atlasv.android.music.player.bean.SongInfo
 import kotlinx.android.synthetic.main.activity_main.*
 
 /**
