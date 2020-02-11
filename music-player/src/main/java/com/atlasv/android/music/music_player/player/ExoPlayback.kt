@@ -37,7 +37,7 @@ open class ExoPlayback internal constructor(
     private var mExoPlayer: SimpleExoPlayer? = null
 
     companion object {
-        private val TAG = ExoPlayback.javaClass.simpleName
+        private val TAG = javaClass.simpleName
         const val ACTION_CHANGE_VOLUME = "ACTION_CHANGE_VOLUME"
         const val ACTION_DERAILLEUR = "ACTION_DERAILLEUR"
     }
