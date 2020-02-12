@@ -4,16 +4,19 @@ import android.content.Context
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.atlasv.android.music.music_player.exo.ExoPlayback
 import com.atlasv.android.music.music_player.service.MediaServiceConnection
 
 /**
  * Created by woyanan on 2020-02-10
  */
-class AudioPlayer(context: Context) {
-    private val connection: MediaServiceConnection?
+class AudioPlayer(val context: Context) {
+    private lateinit var connection: MediaServiceConnection
+    private val playback = ExoPlayback.getInstance(context)
 
-    init {
+    fun init() {
         connection = MediaServiceConnection(context)
     }
 
@@ -33,7 +36,7 @@ class AudioPlayer(context: Context) {
     }
 
     private fun observe(owner: LifecycleOwner, playList: ArrayList<MediaMetadataCompat>) {
-        connection?.isConnected?.observe(owner, Observer<Boolean> {
+        connection.isConnected.observe(owner, Observer<Boolean> {
             if (it) {
                 println("--------------------->observe connected")
                 addQueueItem(playList)
@@ -41,39 +44,55 @@ class AudioPlayer(context: Context) {
         })
     }
 
+    fun getPlaybackState(): MutableLiveData<PlaybackStateCompat>? {
+        return connection.playbackState
+    }
+
     private fun addQueueItem(playList: ArrayList<MediaMetadataCompat>) {
         playList.forEach {
-            connection?.mediaController?.addQueueItem(it.description)
+            connection.mediaController?.addQueueItem(it.description)
         }
     }
 
     fun onPlayFromMediaId(mediaId: String) {
-        connection?.transportControls?.playFromMediaId(mediaId, null)
+        connection.transportControls?.playFromMediaId(mediaId, null)
     }
 
     fun onSkipToPrevious() {
-        connection?.transportControls?.skipToPrevious()
+        connection.transportControls?.skipToPrevious()
     }
 
     fun onSkipToNext() {
-        connection?.transportControls?.skipToNext()
+        connection.transportControls?.skipToNext()
     }
 
     fun onSeekTo(progress: Int) {
         connection?.transportControls?.seekTo(progress.toLong())
     }
 
+    fun getCurrentStreamPosition(): Long {
+        return playback.currentStreamPosition
+    }
+
+    fun getBufferedPosition(): Long {
+        return playback.bufferedPosition
+    }
+
+    fun getDuration(): Long {
+        return playback.duration
+    }
+
     fun onPause() {
-        println("--------------------->state: " + connection?.playbackState?.value?.state)
-        if (connection?.playbackState?.value?.state == PlaybackStateCompat.STATE_PLAYING) {
+        println("--------------------->state: " + connection.playbackState.value?.state)
+        if (connection.playbackState.value?.state == PlaybackStateCompat.STATE_PLAYING) {
             connection.transportControls?.pause()
         } else {
-            connection?.transportControls?.play()
+            connection.transportControls?.play()
         }
     }
 
     fun onStop() {
-        connection?.transportControls?.stop()
+        connection.transportControls?.stop()
     }
 
     companion object {

@@ -23,7 +23,7 @@
         android:layout_marginTop="20dp" />
 
     <SeekBar
-        android:id="@+id/seek_bar"
+        android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/cover"
@@ -36,7 +36,7 @@
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/seek_bar"
+        android:layout_below="@+id/seekBar"
         android:layout_marginStart="16dp"
         android:text="00:00" />
 

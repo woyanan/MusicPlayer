@@ -2,9 +2,14 @@ package com.atlasv.android.music.player
 
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.atlasv.android.music.music_player.AudioPlayer
+import com.atlasv.android.music.music_player.utils.TimerTaskManager
 import com.atlasv.android.music.player.bean.PlayInfo
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -13,6 +18,8 @@ import kotlinx.android.synthetic.main.activity_main.*
  */
 class MainActivity : AppCompatActivity() {
     private var adapter: ListAdapter? = null
+    private var timer = TimerTaskManager()
+    private val audioPlayer = AudioPlayer.getInstance(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,17 +29,63 @@ class MainActivity : AppCompatActivity() {
         recycleView.adapter = adapter
         getData()
         previous.setOnClickListener {
-            AudioPlayer.getInstance(this@MainActivity).onSkipToPrevious()
+            audioPlayer.onSkipToPrevious()
         }
         next.setOnClickListener {
-            AudioPlayer.getInstance(this@MainActivity).onSkipToNext()
+            audioPlayer.onSkipToNext()
         }
         pause.setOnClickListener {
-            AudioPlayer.getInstance(this@MainActivity).onPause()
+            audioPlayer.onPause()
         }
         stop.setOnClickListener {
-            AudioPlayer.getInstance(this@MainActivity).onStop()
+            audioPlayer.onStop()
         }
+        observe()
+    }
+
+    private fun observe() {
+        AudioPlayer.getInstance(this).getPlaybackState()
+            ?.observe(this, Observer<PlaybackStateCompat> {
+                when (it.state) {
+                    PlaybackStateCompat.STATE_PLAYING -> {
+                        timer.updateProgress()
+                    }
+                    PlaybackStateCompat.STATE_PAUSED -> {
+                        timer.stopProgress()
+                    }
+                    PlaybackStateCompat.STATE_STOPPED -> {
+                        timer.stopProgress()
+                    }
+                    PlaybackStateCompat.STATE_ERROR -> {
+                        timer.stopProgress()
+                    }
+                }
+            })
+
+        timer.setUpdateProgress(Runnable {
+            val position = audioPlayer.getCurrentStreamPosition()
+            val duration = audioPlayer.getDuration()
+            val buffered = audioPlayer.getBufferedPosition()
+            if (seekBar.max.toLong() != duration) {
+                seekBar.max = duration.toInt()
+            }
+            seekBar.progress = position.toInt()
+            seekBar.secondaryProgress = buffered.toInt()
+            progress.text = duration.toString()
+            time.text = duration.toString()
+        })
+
+        seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                audioPlayer.onSeekTo(seekBar.progress)
+            }
+        })
     }
 
     private fun getData() {
@@ -42,8 +95,7 @@ class MainActivity : AppCompatActivity() {
                     if (!list.isNullOrEmpty()) {
                         adapter?.setPlayInfoList(list)
                         val playList = transformMediaMetadataCompatList(list)
-                        AudioPlayer.getInstance(this@MainActivity)
-                            .setData(this@MainActivity, playList)
+                        audioPlayer.setData(this@MainActivity, playList)
                     }
                 }
             }
@@ -62,5 +114,10 @@ class MainActivity : AppCompatActivity() {
             metadataCompatList.add(element)
         }
         return metadataCompatList
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        timer.release()
     }
 }

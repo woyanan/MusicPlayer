@@ -1,24 +1,26 @@
 package com.atlasv.android.music.music_player.service
 
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.atlasv.android.music.music_player.exo.IExoPlayback
+import com.atlasv.android.music.music_player.exo.ExoPlayback
 import com.atlasv.android.music.music_player.playback.PlaybackState
 
 /**
  * Created by woyanan on 2020-02-12
  */
 class MediaSessionCallback(
-    private val mediaSession: MediaSessionCompat,
-    private val playback: IExoPlayback
+    context: Context,
+    private val mediaSession: MediaSessionCompat
 ) : MediaSessionCompat.Callback() {
 
     //UI可能被销毁,Service需要保存播放列表,并处理循环模式
     private val playList = arrayListOf<MediaSessionCompat.QueueItem>()
     private var currentPosition: Int = 0
     private val playbackState = PlaybackState()
+    private val playback = ExoPlayback.getInstance(context)
 
     override fun onPlay() {
         super.onPlay()

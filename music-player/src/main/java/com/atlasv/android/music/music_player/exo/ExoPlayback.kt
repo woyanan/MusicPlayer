@@ -14,7 +14,7 @@ import com.google.android.exoplayer2.audio.AudioAttributes
  */
 open class ExoPlayback internal constructor(
     private val context: Context
-) : IExoPlayback {
+) {
     private val eventListener by lazy {
         ExoPlayerEventListener()
     }
@@ -23,51 +23,40 @@ open class ExoPlayback internal constructor(
         ExoSourceManager(context, cacheManager)
     }
 
-    private var mPlayOnFocusGain: Boolean = false
-    private var mExoPlayerNullIsStopped = false
     private var exoPlayer: SimpleExoPlayer? = null
     private var currentMediaId: String? = null
 
-    override var state: Int
-        get() = if (exoPlayer == null) {
-            if (mExoPlayerNullIsStopped)
-                PlaybackStateCompat.STATE_STOPPED
-            else
-                PlaybackStateCompat.STATE_NONE
-        } else {
-            when (exoPlayer!!.playbackState) {
-                Player.STATE_IDLE -> PlaybackStateCompat.STATE_PAUSED
-                Player.STATE_BUFFERING -> PlaybackStateCompat.STATE_BUFFERING
-                Player.STATE_READY -> {
-                    if (exoPlayer!!.playWhenReady)
-                        PlaybackStateCompat.STATE_PLAYING
-                    else
-                        PlaybackStateCompat.STATE_PAUSED
-                }
-                Player.STATE_ENDED -> PlaybackStateCompat.STATE_NONE
-                else -> PlaybackStateCompat.STATE_NONE
+    val state: Int
+        get() = when (exoPlayer?.playbackState) {
+            Player.STATE_IDLE -> PlaybackStateCompat.STATE_PAUSED
+            Player.STATE_BUFFERING -> PlaybackStateCompat.STATE_BUFFERING
+            Player.STATE_READY -> {
+                if (exoPlayer!!.playWhenReady)
+                    PlaybackStateCompat.STATE_PLAYING
+                else
+                    PlaybackStateCompat.STATE_PAUSED
             }
+            Player.STATE_ENDED -> PlaybackStateCompat.STATE_NONE
+            else -> PlaybackStateCompat.STATE_NONE
         }
-        set(value) {}
 
-    override val isPlaying: Boolean
-        get() = mPlayOnFocusGain || (exoPlayer != null && exoPlayer!!.playWhenReady)
+    val isPlaying: Boolean
+        get() = exoPlayer?.playWhenReady == true
 
-    override val currentStreamPosition: Long
+    val currentStreamPosition: Long
         get() = exoPlayer?.currentPosition ?: 0
 
-    override val bufferedPosition: Long
+    val bufferedPosition: Long
         get() = exoPlayer?.bufferedPosition ?: 0
 
-    override val duration: Long
+    val duration: Long
         get() = exoPlayer?.duration ?: -1
 
-    override fun getAudioSessionId(): Int {
+    fun getAudioSessionId(): Int {
         return exoPlayer?.audioSessionId ?: 0
     }
 
-    override fun play(mediaResource: MediaDescriptionCompat, isPlayWhenReady: Boolean) {
-        mPlayOnFocusGain = true
+    fun play(mediaResource: MediaDescriptionCompat, isPlayWhenReady: Boolean) {
         if (mediaResource.mediaId.isNullOrEmpty() || mediaResource.mediaUri == null) {
             return
         }
@@ -77,7 +66,7 @@ open class ExoPlayback internal constructor(
         }
         if (mediaHasChanged) {
             // release everything except the player
-            releaseResources(false)
+            release(false)
 
             if (exoPlayer == null) {
                 createExoPlayer()
@@ -106,25 +95,23 @@ open class ExoPlayback internal constructor(
         exoPlayer?.addListener(eventListener)
     }
 
-    override fun seekTo(position: Long) {
+    fun seekTo(position: Long) {
         exoPlayer?.seekTo(position)
     }
 
-    override fun pause() {
+    fun pause() {
         exoPlayer?.playWhenReady = false
-        releaseResources(false)
+        release(false)
     }
 
-    override fun stop() {
-        releaseResources(true)
+    fun stop() {
+        release(true)
     }
 
-    private fun releaseResources(releasePlayer: Boolean) {
+    private fun release(releasePlayer: Boolean) {
         if (releasePlayer) {
             exoPlayer?.release()
             exoPlayer = null
-            mExoPlayerNullIsStopped = true
-            mPlayOnFocusGain = false
         }
     }
 
@@ -136,5 +123,15 @@ open class ExoPlayback internal constructor(
         override fun onPlayerError(error: ExoPlaybackException) {
 
         }
+    }
+
+    companion object {
+        @Volatile
+        private var instance: ExoPlayback? = null
+
+        fun getInstance(context: Context) =
+            instance ?: synchronized(this) {
+                instance ?: ExoPlayback(context).also { instance = it }
+            }
     }
 }

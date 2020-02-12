@@ -7,8 +7,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.atlasv.android.music.music_player.R
-import com.atlasv.android.music.music_player.exo.ExoPlayback
-import com.atlasv.android.music.music_player.exo.IExoPlayback
 
 /**
  * Created by woyanan on 2020-02-10
@@ -21,11 +19,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var packageValidator: PackageValidator
-    private lateinit var playback: IExoPlayback
 
     override fun onCreate() {
         super.onCreate()
-        playback = ExoPlayback(this)
         mediaSession = MediaSessionCompat(this, "MusicService")
             .apply {
                 setSessionActivity(getPendingIntent())
@@ -33,7 +29,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             }
         sessionToken = mediaSession.sessionToken
         mediaSession.setSessionActivity(getPendingIntent())
-        mediaSession.setCallback(MediaSessionCallback(mediaSession, playback))
+        mediaSession.setCallback(MediaSessionCallback(this, mediaSession))
         mediaSession.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                     or MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
