@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.atlasv.android.music.music_player.exo.IPlayback
+import com.atlasv.android.music.music_player.exo.IExoPlayback
 import com.atlasv.android.music.music_player.playback.PlaybackState
 
 /**
@@ -12,7 +12,7 @@ import com.atlasv.android.music.music_player.playback.PlaybackState
  */
 class MediaSessionCallback(
     private val mediaSession: MediaSessionCompat,
-    private val playback: IPlayback
+    private val playback: IExoPlayback
 ) : MediaSessionCompat.Callback() {
 
     //UI可能被销毁,Service需要保存播放列表,并处理循环模式
@@ -53,7 +53,6 @@ class MediaSessionCallback(
                 MediaSessionCompat.QueueItem(description, description.hashCode().toLong())
             )
         }
-//        mediaSession.setQueue(playList)
     }
 
     override fun onRemoveQueueItem(description: MediaDescriptionCompat?) {
@@ -61,7 +60,6 @@ class MediaSessionCallback(
         playList.remove(
             MediaSessionCompat.QueueItem(description, description.hashCode().toLong())
         )
-//        mediaSession.setQueue(playList)
     }
 
     override fun onSkipToPrevious() {

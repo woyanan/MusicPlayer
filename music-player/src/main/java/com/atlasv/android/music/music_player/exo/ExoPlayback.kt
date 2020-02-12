@@ -14,7 +14,7 @@ import com.google.android.exoplayer2.audio.AudioAttributes
  */
 open class ExoPlayback internal constructor(
     private val context: Context
-) : IPlayback {
+) : IExoPlayback {
     private val eventListener by lazy {
         ExoPlayerEventListener()
     }

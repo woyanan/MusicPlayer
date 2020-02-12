@@ -8,7 +8,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.atlasv.android.music.music_player.R
 import com.atlasv.android.music.music_player.exo.ExoPlayback
-import com.atlasv.android.music.music_player.exo.IPlayback
+import com.atlasv.android.music.music_player.exo.IExoPlayback
 
 /**
  * Created by woyanan on 2020-02-10
@@ -21,7 +21,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var packageValidator: PackageValidator
-    private lateinit var playback: IPlayback
+    private lateinit var playback: IExoPlayback
 
     override fun onCreate() {
         super.onCreate()

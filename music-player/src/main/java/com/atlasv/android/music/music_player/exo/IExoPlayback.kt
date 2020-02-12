@@ -5,7 +5,7 @@ import android.support.v4.media.MediaDescriptionCompat
 /**
  * Created by woyanan on 2020-02-10
  */
-interface IPlayback {
+interface IExoPlayback {
     var state: Int
     val isPlaying: Boolean
     val currentStreamPosition: Long
