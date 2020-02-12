@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.atlasv.android.music.music_player.AudioPlayer
 import com.atlasv.android.music.music_player.utils.TimerTaskManager
 import com.atlasv.android.music.player.bean.PlayInfo
+import com.atlasv.android.music.player.utils.Common
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_main.*
 
 /**
@@ -71,8 +73,9 @@ class MainActivity : AppCompatActivity() {
             }
             seekBar.progress = position.toInt()
             seekBar.secondaryProgress = buffered.toInt()
-            progress.text = duration.toString()
-            time.text = duration.toString()
+            progress.text =
+                Common.formatPlayTime(position) + "/" + Common.formatPlayTime(duration)
+            time.text = Common.formatPlayTime(duration)
         })
 
         seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
@@ -86,6 +89,11 @@ class MainActivity : AppCompatActivity() {
                 audioPlayer.onSeekTo(seekBar.progress)
             }
         })
+    }
+
+    private fun updateInfo(playInfo: PlayInfo) {
+        tvTitle.text = playInfo.songName
+        Glide.with(this).load(playInfo.songCover).into(cover)
     }
 
     private fun getData() {
