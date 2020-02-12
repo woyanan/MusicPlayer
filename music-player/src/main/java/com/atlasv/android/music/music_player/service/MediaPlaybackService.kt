@@ -7,8 +7,8 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.atlasv.android.music.music_player.R
-import com.atlasv.android.music.music_player.player.ExoPlayback
-import com.atlasv.android.music.music_player.player.IPlayback
+import com.atlasv.android.music.music_player.playback.ExoPlayback
+import com.atlasv.android.music.music_player.playback.IPlayback
 
 /**
  * Created by woyanan on 2020-02-10

@@ -1,4 +1,4 @@
-package com.atlasv.android.music.music_player.player
+package com.atlasv.android.music.music_player.playback
 
 import android.support.v4.media.MediaDescriptionCompat
 

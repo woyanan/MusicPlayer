@@ -3,7 +3,7 @@ package com.atlasv.android.music.music_player.service
 import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
-import com.atlasv.android.music.music_player.player.IPlayback
+import com.atlasv.android.music.music_player.playback.IPlayback
 
 /**
  * Created by woyanan on 2020-02-12
