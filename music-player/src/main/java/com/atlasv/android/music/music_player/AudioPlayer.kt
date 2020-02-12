@@ -2,7 +2,6 @@ package com.atlasv.android.music.music_player
 
 import android.content.Context
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.atlasv.android.music.music_player.service.MediaServiceConnection
@@ -52,7 +51,7 @@ class AudioPlayer(context: Context) {
     }
 
     fun onSkipToPrevious() {
-        connection?.transportControls?.skipToNext()
+        connection?.transportControls?.skipToPrevious()
     }
 
     fun onSkipToNext() {

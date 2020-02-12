@@ -50,12 +50,14 @@ class MediaSessionCallback(
     override fun onSkipToPrevious() {
         super.onSkipToPrevious()
         currentPosition = if (currentPosition > 0) currentPosition - 1 else playList.size - 1
+        println("--------------------->currentPosition: $currentPosition")
         playback.play(playList[currentPosition].description, true)
     }
 
     override fun onSkipToNext() {
         super.onSkipToNext()
         currentPosition = (++currentPosition % playList.size)
+        println("--------------------->currentPosition: $currentPosition")
         playback.play(playList[currentPosition].description, true)
     }
 
