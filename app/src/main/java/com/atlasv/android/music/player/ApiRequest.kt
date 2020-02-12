@@ -33,7 +33,7 @@ class ApiRequest {
     /**
      * 获取数据
      */
-    fun getMusicList(
+    fun getPlayInfoList(
         callback: RequestCallback
     ) {
         val request = Request.Builder()
@@ -68,8 +68,7 @@ class ApiRequest {
                         info.songCover = `object`.getString("pic_big")
                         info.songName = `object`.getString("title")
                         info.artist = `object`.getString("author")
-                        info.songUrl =
-                            "http://audio04.dmhmusic.com/71_53_T10052953671_128_4_1_0_sdk-cpm/cn/0209/M00/E1/B8/ChR47F33J_yAHE_JACrgf2qqnyQ634.mp3?xcode=91ea4a9e9046987f5daae20ec2058044d218218"
+                        info.songUrl = getUrl(info.songId)
                         list.add(info)
                     }
                     callback.onSuccess(list)
@@ -83,34 +82,23 @@ class ApiRequest {
     /**
      * 获取音频url
      */
-    fun getSongInfoDetail(songId: String, callback: RequestInfoCallback) {
+    fun getUrl(id: String): String {
         val request = Request.Builder()
             .url(
-                "http://tingapi.ting.baidu.com/v1/restserver/ting?method=baidu.ting.song.play&songid=" +
-                        songId
+                "http://tingapi.ting.baidu.com/v1/restserver/ting?method=baidu.ting.song.play&songid=$id"
             )
             .build()
-        client!!.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {}
-            @Throws(IOException::class)
-            override fun onResponse(call: Call, response: Response) {
-                try {
-                    val jsonObject =
-                        JSONObject(response.body!!.string()).getJSONObject("bitrate")
-                    val url = jsonObject.getString("file_link")
-                    callback.onSuccess(url)
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
-            }
-        })
+        val response: Response? = client?.newCall(request)?.execute()
+        try {
+            val jsonObject = JSONObject(response?.body?.string()).getJSONObject("bitrate")
+            return jsonObject.getString("file_link")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
     }
 
     interface RequestCallback {
         fun onSuccess(list: List<PlayInfo>?)
-    }
-
-    interface RequestInfoCallback {
-        fun onSuccess(songUrl: String?)
     }
 }

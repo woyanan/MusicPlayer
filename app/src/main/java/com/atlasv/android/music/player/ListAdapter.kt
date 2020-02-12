@@ -41,7 +41,7 @@ class ListAdapter(private val context: Context) :
         Glide.with(context).load(playInfo.songCover).into(holder.cover)
         holder.title.text = playInfo.songName
         holder.itemView.setOnClickListener {
-            AudioPlayer.getInstance(holder.itemView.context).onPlay(playInfo.songId)
+            AudioPlayer.getInstance(holder.itemView.context).onPlayFromMediaId(playInfo.songId)
         }
     }
 

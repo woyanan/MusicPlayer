@@ -14,7 +14,7 @@ import com.google.android.exoplayer2.audio.AudioAttributes
  */
 open class ExoPlayback internal constructor(
     private val context: Context
-) : Playback {
+) : IPlayback {
     private val eventListener by lazy {
         ExoPlayerEventListener()
     }
@@ -26,6 +26,7 @@ open class ExoPlayback internal constructor(
     private var mPlayOnFocusGain: Boolean = false
     private var mExoPlayerNullIsStopped = false
     private var exoPlayer: SimpleExoPlayer? = null
+    private var currentMediaId: String? = null
 
     override var state: Int
         get() = if (exoPlayer == null) {
@@ -49,9 +50,6 @@ open class ExoPlayback internal constructor(
         }
         set(value) {}
 
-    override val isConnected: Boolean
-        get() = true
-
     override val isPlaying: Boolean
         get() = mPlayOnFocusGain || (exoPlayer != null && exoPlayer!!.playWhenReady)
 
@@ -64,20 +62,8 @@ open class ExoPlayback internal constructor(
     override val duration: Long
         get() = exoPlayer?.duration ?: -1
 
-    override var currentMediaId: String = ""
-
-    override var volume: Float
-        get() = exoPlayer?.volume ?: -1f
-        set(value) {
-            exoPlayer?.volume = value
-        }
-
     override fun getAudioSessionId(): Int {
         return exoPlayer?.audioSessionId ?: 0
-    }
-
-    override fun stop(notifyListeners: Boolean) {
-        releaseResources(true)
     }
 
     override fun play(mediaResource: MediaDescriptionCompat, isPlayWhenReady: Boolean) {
@@ -120,13 +106,17 @@ open class ExoPlayback internal constructor(
         exoPlayer?.addListener(eventListener)
     }
 
+    override fun seekTo(position: Long) {
+        exoPlayer?.seekTo(position)
+    }
+
     override fun pause() {
         exoPlayer?.playWhenReady = false
         releaseResources(false)
     }
 
-    override fun seekTo(position: Long) {
-        exoPlayer?.seekTo(position)
+    override fun stop() {
+        releaseResources(true)
     }
 
     private fun releaseResources(releasePlayer: Boolean) {

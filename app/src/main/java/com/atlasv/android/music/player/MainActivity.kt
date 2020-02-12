@@ -21,11 +21,16 @@ class MainActivity : AppCompatActivity() {
         adapter = ListAdapter(this)
         recycleView.adapter = adapter
         getData()
+        previous.setOnClickListener {
+            AudioPlayer.getInstance(this@MainActivity).onSkipToPrevious()
+        }
+        next.setOnClickListener {
+            AudioPlayer.getInstance(this@MainActivity).onSkipToNext()
+        }
     }
 
     private fun getData() {
-        val request = ApiRequest()
-        request.getMusicList(object : ApiRequest.RequestCallback {
+        ApiRequest().getPlayInfoList(object : ApiRequest.RequestCallback {
             override fun onSuccess(list: List<PlayInfo>?) {
                 runOnUiThread {
                     if (!list.isNullOrEmpty()) {

@@ -36,6 +36,7 @@ class MediaServiceConnection(context: Context) {
             mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
                 registerCallback(MediaControllerCallback())
             }
+            transportControls?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL)
             isConnected.postValue(true)
         }
 

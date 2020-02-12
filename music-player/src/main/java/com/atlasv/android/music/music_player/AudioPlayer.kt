@@ -2,12 +2,9 @@ package com.atlasv.android.music.music_player
 
 import android.content.Context
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import com.atlasv.android.music.music_player.playback.IPlaybackManager
-import com.atlasv.android.music.music_player.playback.PlaybackManager
-import com.atlasv.android.music.music_player.player.ExoPlayback
-import com.atlasv.android.music.music_player.player.Playback
 import com.atlasv.android.music.music_player.service.MediaServiceConnection
 
 /**
@@ -15,17 +12,9 @@ import com.atlasv.android.music.music_player.service.MediaServiceConnection
  */
 class AudioPlayer(context: Context) {
     private val connection: MediaServiceConnection?
-    private val playback: Playback
-    private val playbackManager: IPlaybackManager
 
     init {
         connection = MediaServiceConnection(context)
-        playback = ExoPlayback(context)
-        playbackManager = PlaybackManager(playback)
-    }
-
-    fun getPlaybackManager(): IPlaybackManager? {
-        return playbackManager
     }
 
     fun setData(owner: LifecycleOwner, playList: ArrayList<MediaMetadataCompat>) {
@@ -58,8 +47,28 @@ class AudioPlayer(context: Context) {
         }
     }
 
-    fun onPlay(mediaId: String) {
+    fun onPlayFromMediaId(mediaId: String) {
         connection?.transportControls?.playFromMediaId(mediaId, null)
+    }
+
+    fun onSkipToPrevious() {
+        connection?.transportControls?.skipToNext()
+    }
+
+    fun onSkipToNext() {
+        connection?.transportControls?.skipToNext()
+    }
+
+    fun onPause() {
+//        if (mPlayStateLiveData.value?.state == PlaybackStateCompat.STATE_PLAYING) {
+//            mMediaControllerCompat?.transportControls?.pause()
+//        } else {
+//            mMediaControllerCompat?.transportControls?.play()
+//        }
+    }
+
+    fun onSeekTo(progress: Int) {
+        connection?.transportControls?.seekTo(progress.toLong())
     }
 
     companion object {
