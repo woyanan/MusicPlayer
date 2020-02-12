@@ -21,37 +21,25 @@ class AudioPlayer(val context: Context) {
     }
 
     fun setData(owner: LifecycleOwner, playList: ArrayList<MediaMetadataCompat>) {
-//        connection?.let {
-//            Transformations.map(it.isConnected) { isConnected ->
-//                if (isConnected) {
-//                    println("--------------------->connected")
-//                    addQueueItem(playList)
-//                } else {
-//                    println("--------------------->observe")
-//                    observe(owner, playList)
-//                }
-//            }
-//        }
-        observe(owner, playList)
-    }
-
-    private fun observe(owner: LifecycleOwner, playList: ArrayList<MediaMetadataCompat>) {
-        connection.isConnected.observe(owner, Observer<Boolean> {
-            if (it) {
-                println("--------------------->observe connected")
-                addQueueItem(playList)
-            }
-        })
-    }
-
-    fun getPlaybackState(): MutableLiveData<PlaybackStateCompat>? {
-        return connection.playbackState
+        if (connection.isConnected.value == true) {
+            addQueueItem(playList)
+        } else {
+            connection.isConnected.observe(owner, Observer<Boolean> {
+                if (it) {
+                    addQueueItem(playList)
+                }
+            })
+        }
     }
 
     private fun addQueueItem(playList: ArrayList<MediaMetadataCompat>) {
         playList.forEach {
-            connection.mediaController?.addQueueItem(it.description)
+            connection.mediaController.addQueueItem(it.description)
         }
+    }
+
+    fun getPlaybackState(): MutableLiveData<PlaybackStateCompat>? {
+        return connection.playbackState
     }
 
     fun onPlayFromMediaId(mediaId: String) {
@@ -67,7 +55,7 @@ class AudioPlayer(val context: Context) {
     }
 
     fun onSeekTo(progress: Int) {
-        connection?.transportControls?.seekTo(progress.toLong())
+        connection.transportControls?.seekTo(progress.toLong())
     }
 
     fun getCurrentStreamPosition(): Long {
@@ -83,7 +71,6 @@ class AudioPlayer(val context: Context) {
     }
 
     fun onPause() {
-        println("--------------------->state: " + connection.playbackState.value?.state)
         if (connection.playbackState.value?.state == PlaybackStateCompat.STATE_PLAYING) {
             connection.transportControls?.pause()
         } else {
