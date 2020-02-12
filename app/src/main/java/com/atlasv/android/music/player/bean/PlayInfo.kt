@@ -8,7 +8,7 @@ import kotlinx.android.parcel.Parcelize
  * Created by woyanan on 2020-02-11
  */
 @Parcelize
-class SongInfo(
+class PlayInfo(
     var songId: String = "", //音乐id
     var songName: String = "",  //音乐标题
     var songCover: String = "",  //音乐封面
@@ -38,7 +38,7 @@ class SongInfo(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SongInfo
+        other as PlayInfo
 
         if (songId != other.songId) return false
         if (songName != other.songName) return false

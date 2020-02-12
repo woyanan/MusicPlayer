@@ -4,13 +4,12 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
-import com.atlasv.android.music.music_player.MusicPlayer
+import com.atlasv.android.music.music_player.AudioPlayer
 import com.atlasv.android.music.music_player.R
 import com.atlasv.android.music.music_player.playback.IPlaybackManager
-import com.atlasv.android.music.music_player.playback.MediaSessionCallback
 
 /**
  * Created by woyanan on 2020-02-10
@@ -22,14 +21,44 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     }
 
     private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var mediaController: MediaControllerCompat
-    private lateinit var transportControls: MediaControllerCompat.TransportControls
     private lateinit var packageValidator: PackageValidator
     private var playbackManager: IPlaybackManager? = null
+    //UI可能被销毁,Service需要保存播放列表,并处理循环模式
+    private var playList = arrayListOf<MediaSessionCompat.QueueItem>()
+    private val mediaSessionCallback = object : MediaSessionCompat.Callback() {
+
+        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+            super.onPlayFromMediaId(mediaId, extras)
+            mediaId?.apply {
+                playList.forEach {
+                    if (it.description.mediaId == mediaId) {
+                        playbackManager?.play(it.description, true)
+                        return@forEach
+                    }
+                }
+            }
+        }
+
+        override fun onAddQueueItem(description: MediaDescriptionCompat?) {
+            super.onAddQueueItem(description)
+            println("--------------------->mediaId: " + description?.mediaId)
+            if (playList.find { it.description.mediaId == description?.mediaId } == null) {
+                playList.add(
+                    MediaSessionCompat.QueueItem(description, description.hashCode().toLong())
+                )
+            }
+//            mediaSession.setQueue(playList)
+        }
+
+        override fun onRemoveQueueItem(description: MediaDescriptionCompat?) {
+            super.onRemoveQueueItem(description)
+
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
-        playbackManager = MusicPlayer.getInstance(this).getPlaybackManager()
+        playbackManager = AudioPlayer.getInstance(this).getPlaybackManager()
         mediaSession = MediaSessionCompat(this, "MusicService")
             .apply {
                 setSessionActivity(getPendingIntent())
@@ -37,15 +66,12 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             }
         sessionToken = mediaSession.sessionToken
         mediaSession.setSessionActivity(getPendingIntent())
-        mediaSession.setCallback(MediaSessionCallback(playbackManager))
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-        mediaSession.setExtras(Bundle())
-
-        try {
-            mediaController = MediaControllerCompat(this, mediaSession.sessionToken)
-        } catch (e: Exception) {
-            transportControls = mediaController.transportControls
-        }
+        mediaSession.setCallback(mediaSessionCallback)
+        mediaSession.setFlags(
+            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
+                    or MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
+                    or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+        )
 
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
     }
@@ -59,6 +85,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
+        println("--------------------->onLoadChildren, parentId: $parentId")
         //no-op
     }
 

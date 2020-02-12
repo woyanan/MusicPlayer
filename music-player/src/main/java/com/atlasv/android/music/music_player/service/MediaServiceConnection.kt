@@ -3,54 +3,48 @@ package com.atlasv.android.music.music_player.service
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
-import android.os.RemoteException
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.lifecycle.MutableLiveData
 
 /**
  * Created by woyanan on 2020-02-11
  */
-class MediaServiceConnection(context: Context) : IMediaConnection {
-    private lateinit var mediaController: MediaControllerCompat
+class MediaServiceConnection(context: Context) {
+    val isConnected = MutableLiveData<Boolean>()
+        .apply { postValue(false) }
+
     private val mediaBrowserConnectionCallback = MediaBrowserConnectionCallback(context)
     private val mediaBrowser = MediaBrowserCompat(
         context,
         ComponentName(context, MediaPlaybackService::class.java),
         mediaBrowserConnectionCallback, null
     ).apply { connect() }
-    private var transportControls: MediaControllerCompat.TransportControls? = null
 
-    fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.subscribe(parentId, callback)
-    }
-
-    fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.unsubscribe(parentId, callback)
-    }
+    lateinit var mediaController: MediaControllerCompat
+    val transportControls: MediaControllerCompat.TransportControls?
+        get() = mediaController.transportControls
 
     private inner class MediaBrowserConnectionCallback(private val context: Context) :
         MediaBrowserCompat.ConnectionCallback() {
 
         override fun onConnected() {
-            try {
-                mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
-                    registerCallback(MediaControllerCallback())
-                }
-                transportControls = mediaController.transportControls
-            } catch (e: RemoteException) {
-                e.printStackTrace()
+            println("--------------------->onConnected")
+            mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
+                registerCallback(MediaControllerCallback())
             }
+            isConnected.postValue(true)
         }
 
         override fun onConnectionSuspended() {
-
+            isConnected.postValue(false)
         }
 
         override fun onConnectionFailed() {
-
+            isConnected.postValue(false)
         }
     }
 
@@ -70,9 +64,5 @@ class MediaServiceConnection(context: Context) : IMediaConnection {
         override fun onSessionDestroyed() {
             mediaBrowserConnectionCallback.onConnectionSuspended()
         }
-    }
-
-    override fun getTransportControls(): MediaControllerCompat.TransportControls? {
-        return transportControls
     }
 }

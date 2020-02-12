@@ -8,8 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
-import com.atlasv.android.music.music_player.MusicPlayer
-import com.atlasv.android.music.player.bean.SongInfo
+import com.atlasv.android.music.music_player.AudioPlayer
+import com.atlasv.android.music.player.bean.PlayInfo
 import com.bumptech.glide.Glide
 import java.util.*
 
@@ -18,11 +18,11 @@ import java.util.*
  */
 class ListAdapter(private val context: Context) :
     RecyclerView.Adapter<ListAdapter.Holder>() {
-    private val mSongInfos: ArrayList<SongInfo> = ArrayList()
+    private val playInfoList: ArrayList<PlayInfo> = ArrayList()
 
-    fun setSongInfos(songInfos: List<SongInfo>) {
-        mSongInfos.clear()
-        mSongInfos.addAll(songInfos)
+    fun setPlayInfoList(playInfoList: List<PlayInfo>) {
+        this.playInfoList.clear()
+        this.playInfoList.addAll(playInfoList)
         notifyDataSetChanged()
     }
 
@@ -33,26 +33,20 @@ class ListAdapter(private val context: Context) :
     }
 
     override fun getItemCount(): Int {
-        return mSongInfos.size
+        return playInfoList.size
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        val songInfo = mSongInfos[position]
-        Glide.with(context).load(songInfo.songCover).into(holder.cover)
-        holder.title.text = songInfo.songName
+        val playInfo = playInfoList[position]
+        Glide.with(context).load(playInfo.songCover).into(holder.cover)
+        holder.title.text = playInfo.songName
         holder.itemView.setOnClickListener {
-            MusicPlayer.getInstance(holder.itemView.context).onPlay(songInfo.songId)
+            AudioPlayer.getInstance(holder.itemView.context).onPlay(playInfo.songId)
         }
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int, payloads: MutableList<Any>) {
         super.onBindViewHolder(holder, position, payloads)
-//        val songInfo = mSongInfos[position]
-//        if (payloads.isEmpty()) {
-//            onBindViewHolder(holder, position)
-//        } else {
-//
-//        }
     }
 
     class Holder(@NonNull itemView: View) : RecyclerView.ViewHolder(itemView) {

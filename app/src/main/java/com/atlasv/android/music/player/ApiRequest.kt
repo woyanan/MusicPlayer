@@ -1,6 +1,6 @@
 package com.atlasv.android.music.player
 
-import com.atlasv.android.music.player.bean.SongInfo
+import com.atlasv.android.music.player.bean.PlayInfo
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -59,15 +59,17 @@ class ApiRequest {
                     val json = response.body!!.string()
                     val jsonObject = JSONObject(json)
                     val jsonArray = jsonObject.getJSONArray("song_list")
-                    val list: MutableList<SongInfo> = ArrayList()
+                    val list: MutableList<PlayInfo> = ArrayList()
                     for (i in 0 until jsonArray.length()) {
                         val `object` = jsonArray.getJSONObject(i)
                         val info =
-                            SongInfo()
+                            PlayInfo()
                         info.songId = `object`.getString("song_id")
                         info.songCover = `object`.getString("pic_big")
                         info.songName = `object`.getString("title")
                         info.artist = `object`.getString("author")
+                        info.songUrl =
+                            "http://audio04.dmhmusic.com/71_53_T10052953671_128_4_1_0_sdk-cpm/cn/0209/M00/E1/B8/ChR47F33J_yAHE_JACrgf2qqnyQ634.mp3?xcode=91ea4a9e9046987f5daae20ec2058044d218218"
                         list.add(info)
                     }
                     callback.onSuccess(list)
@@ -105,7 +107,7 @@ class ApiRequest {
     }
 
     interface RequestCallback {
-        fun onSuccess(list: List<SongInfo>?)
+        fun onSuccess(list: List<PlayInfo>?)
     }
 
     interface RequestInfoCallback {

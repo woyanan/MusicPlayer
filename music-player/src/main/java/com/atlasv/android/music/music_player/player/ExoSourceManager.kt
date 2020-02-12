@@ -17,8 +17,7 @@ import com.google.android.exoplayer2.util.Util
 class ExoSourceManager constructor(
     private val context: Context, private val cacheManager: CacheManager
 ) {
-    private var dataSource: String = ""
-    private var mMapHeadData: Map<String, String>? = hashMapOf()
+    private var contentUri: Uri? = null
     private var cache: Cache? = null
     private var isCached = false
 
@@ -27,15 +26,12 @@ class ExoSourceManager constructor(
     }
 
     fun buildMediaSource(
-        dataSource: String,
-        mapHeadData: Map<String, String>?,
+        contentUri: Uri?,
         cacheEnable: Boolean,
         cache: Cache?
     ): MediaSource {
-        this.dataSource = dataSource
-        this.mMapHeadData = mapHeadData
+        this.contentUri = contentUri
         this.cache = cache
-        val contentUri = Uri.parse(dataSource)
         val dataSourceFactory = getDataSourceFactoryCache(cacheEnable)
         return ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(contentUri)
     }
@@ -45,7 +41,7 @@ class ExoSourceManager constructor(
     ): DataSource.Factory {
         return if (cacheEnable) {
             if (cache != null) {
-                isCached = cacheManager.resolveCacheState(cache, dataSource)
+                isCached = cacheManager.resolveCacheState(cache, contentUri.toString())
             }
             CacheDataSourceFactory(
                 cache, getDataSourceFactory(),
@@ -59,7 +55,7 @@ class ExoSourceManager constructor(
     private fun getDataSourceFactory(): DataSource.Factory {
         return DefaultDataSourceFactory(
             context,
-            Util.getUserAgent(context, context.applicationInfo?.name)
+            Util.getUserAgent(context, context.applicationInfo.name)
         )
     }
 }
