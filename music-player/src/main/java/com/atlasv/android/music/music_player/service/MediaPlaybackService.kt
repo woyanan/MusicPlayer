@@ -7,8 +7,8 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.atlasv.android.music.music_player.R
-import com.atlasv.android.music.music_player.playback.ExoPlayback
-import com.atlasv.android.music.music_player.playback.IPlayback
+import com.atlasv.android.music.music_player.exo.ExoPlayback
+import com.atlasv.android.music.music_player.exo.IPlayback
 
 /**
  * Created by woyanan on 2020-02-10
@@ -33,7 +33,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             }
         sessionToken = mediaSession.sessionToken
         mediaSession.setSessionActivity(getPendingIntent())
-        mediaSession.setCallback(MediaSessionCallback(playback))
+        mediaSession.setCallback(MediaSessionCallback(mediaSession, playback))
         mediaSession.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                     or MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS

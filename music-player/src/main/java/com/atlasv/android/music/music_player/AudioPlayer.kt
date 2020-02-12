@@ -2,6 +2,7 @@ package com.atlasv.android.music.music_player
 
 import android.content.Context
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.atlasv.android.music.music_player.service.MediaServiceConnection
@@ -58,16 +59,21 @@ class AudioPlayer(context: Context) {
         connection?.transportControls?.skipToNext()
     }
 
-    fun onPause() {
-//        if (mPlayStateLiveData.value?.state == PlaybackStateCompat.STATE_PLAYING) {
-//            mMediaControllerCompat?.transportControls?.pause()
-//        } else {
-//            mMediaControllerCompat?.transportControls?.play()
-//        }
-    }
-
     fun onSeekTo(progress: Int) {
         connection?.transportControls?.seekTo(progress.toLong())
+    }
+
+    fun onPause() {
+        println("--------------------->state: " + connection?.playbackState?.value?.state)
+        if (connection?.playbackState?.value?.state == PlaybackStateCompat.STATE_PLAYING) {
+            connection.transportControls?.pause()
+        } else {
+            connection?.transportControls?.play()
+        }
+    }
+
+    fun onStop() {
+        connection?.transportControls?.stop()
     }
 
     companion object {

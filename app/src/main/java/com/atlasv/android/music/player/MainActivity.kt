@@ -27,6 +27,12 @@ class MainActivity : AppCompatActivity() {
         next.setOnClickListener {
             AudioPlayer.getInstance(this@MainActivity).onSkipToNext()
         }
+        pause.setOnClickListener {
+            AudioPlayer.getInstance(this@MainActivity).onPause()
+        }
+        stop.setOnClickListener {
+            AudioPlayer.getInstance(this@MainActivity).onStop()
+        }
     }
 
     private fun getData() {

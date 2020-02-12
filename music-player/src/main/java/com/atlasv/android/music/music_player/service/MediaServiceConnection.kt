@@ -16,6 +16,7 @@ import androidx.lifecycle.MutableLiveData
 class MediaServiceConnection(context: Context) {
     val isConnected = MutableLiveData<Boolean>()
         .apply { postValue(false) }
+    val playbackState = MutableLiveData<PlaybackStateCompat>()
 
     private val mediaBrowserConnectionCallback = MediaBrowserConnectionCallback(context)
     private val mediaBrowser = MediaBrowserCompat(
@@ -51,12 +52,15 @@ class MediaServiceConnection(context: Context) {
 
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
+            println("--------------------->onPlaybackStateChanged: $state")
+            playbackState.postValue(state)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
+
         }
 
         override fun onSessionEvent(event: String?, extras: Bundle?) {

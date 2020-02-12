@@ -1,4 +1,4 @@
-package com.atlasv.android.music.music_player.playback
+package com.atlasv.android.music.music_player.exo
 
 import android.content.Context
 import android.net.Uri
