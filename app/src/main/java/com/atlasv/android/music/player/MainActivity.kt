@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, it.songUrl)
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, it.songName)
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, it.songCover)
-                .putString(MediaMetadataCompat.METADATA_KEY_DURATION, it.duration.toString())
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, it.duration)
                 .build()
             metadataCompatList.add(element)
         }

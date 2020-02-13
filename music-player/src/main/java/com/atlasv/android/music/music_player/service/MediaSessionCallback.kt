@@ -70,6 +70,10 @@ class MediaSessionCallback(
         currentPosition = if (currentPosition > 0) currentPosition - 1 else playList.size - 1
         val description = playList[currentPosition].description
         playback.play(description, true)
+        playbackState.setState(
+            PlaybackStateCompat.STATE_PLAYING,
+            playback.currentStreamPosition, mediaSession
+        )
         setMetadata(description)
     }
 
@@ -78,6 +82,10 @@ class MediaSessionCallback(
         currentPosition = (++currentPosition % playList.size)
         val description = playList[currentPosition].description
         playback.play(description, true)
+        playbackState.setState(
+            PlaybackStateCompat.STATE_PLAYING,
+            playback.currentStreamPosition, mediaSession
+        )
         setMetadata(description)
     }
 

@@ -26,12 +26,12 @@ open class ExoPlayback internal constructor(
     private var exoPlayer: SimpleExoPlayer? = null
     private var currentMediaId: String? = null
 
-    val state: Int
+    private val state: Int
         get() = when (exoPlayer?.playbackState) {
             Player.STATE_IDLE -> PlaybackStateCompat.STATE_PAUSED
             Player.STATE_BUFFERING -> PlaybackStateCompat.STATE_BUFFERING
             Player.STATE_READY -> {
-                if (exoPlayer!!.playWhenReady)
+                if (exoPlayer?.playWhenReady == true)
                     PlaybackStateCompat.STATE_PLAYING
                 else
                     PlaybackStateCompat.STATE_PAUSED
@@ -52,19 +52,15 @@ open class ExoPlayback internal constructor(
     val duration: Long
         get() = exoPlayer?.duration ?: -1
 
-    fun getAudioSessionId(): Int {
-        return exoPlayer?.audioSessionId ?: 0
-    }
-
     fun play(mediaResource: MediaDescriptionCompat, isPlayWhenReady: Boolean) {
         if (mediaResource.mediaId.isNullOrEmpty() || mediaResource.mediaUri == null) {
             return
         }
         val mediaHasChanged = mediaResource.mediaId != currentMediaId
         if (mediaHasChanged) {
-            currentMediaId = mediaResource.mediaId!!
+            currentMediaId = mediaResource.mediaId
         }
-        if (mediaHasChanged) {
+        if (mediaHasChanged || state == PlaybackStateCompat.STATE_NONE) {
             // release everything except the player
             release(false)
 
