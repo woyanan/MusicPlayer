@@ -8,7 +8,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.atlasv.android.music.music_player.R
 import com.atlasv.android.music.music_player.exo.ExoPlayback
-import com.atlasv.android.music.music_player.exo.IEventCallback
 import com.atlasv.android.music.music_player.playback.PlaybackState
 
 /**
@@ -77,10 +76,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return super.onStartCommand(intent, flags, startId)
-    }
-
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         stopSelf()
@@ -88,5 +83,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         super.onDestroy()
+        ExoPlayback.getInstance(this).release()
+        mediaSession.release()
     }
 }

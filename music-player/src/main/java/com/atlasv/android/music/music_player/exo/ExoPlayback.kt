@@ -66,9 +66,6 @@ open class ExoPlayback internal constructor(
             currentMediaId = mediaResource.mediaId
         }
         if (mediaHasChanged || state == PlaybackStateCompat.STATE_NONE) {
-            // release everything except the player
-            release(false)
-
             if (exoPlayer == null) {
                 createExoPlayer()
             }
@@ -102,18 +99,16 @@ open class ExoPlayback internal constructor(
 
     fun pause() {
         exoPlayer?.playWhenReady = false
-        release(false)
     }
 
     fun stop() {
-        release(true)
+        release()
     }
 
-    private fun release(releasePlayer: Boolean) {
-        if (releasePlayer) {
-            exoPlayer?.release()
-            exoPlayer = null
-        }
+    fun release() {
+        exoPlayer?.release()
+        exoPlayer?.removeListener(eventListener)
+        exoPlayer = null
     }
 
     private inner class ExoPlayerEventListener : Player.EventListener {
