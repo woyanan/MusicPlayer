@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private var adapter: ListAdapter? = null
     private var timer = TimerTaskManager()
     private val audioPlayer = AudioPlayer.getInstance(this)
+    private val playInfoList = ArrayList<PlayInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +47,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observe() {
-        AudioPlayer.getInstance(this).getPlaybackState()
-            ?.observe(this, Observer<PlaybackStateCompat> {
+        audioPlayer.playbackState
+            .observe(this, Observer {
                 when (it.state) {
                     PlaybackStateCompat.STATE_PLAYING -> {
                         timer.updateProgress()
@@ -89,11 +90,21 @@ class MainActivity : AppCompatActivity() {
                 audioPlayer.onSeekTo(seekBar.progress)
             }
         })
+
+        audioPlayer.playList.observe(this, Observer {
+            adapter?.setPlayInfoList(playInfoList)
+        })
+
+        audioPlayer.currentMetaData.observe(this, Observer {
+            updateInfo(it)
+        })
     }
 
-    private fun updateInfo(playInfo: PlayInfo) {
-        tvTitle.text = playInfo.songName
-        Glide.with(this).load(playInfo.songCover).into(cover)
+    private fun updateInfo(metadata: MediaMetadataCompat) {
+        val title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
+        val icon = metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI)
+        tvTitle.text = title
+        Glide.with(this).load(icon).into(cover)
     }
 
     private fun getData() {
@@ -101,7 +112,8 @@ class MainActivity : AppCompatActivity() {
             override fun onSuccess(list: List<PlayInfo>?) {
                 runOnUiThread {
                     if (!list.isNullOrEmpty()) {
-                        adapter?.setPlayInfoList(list)
+                        playInfoList.clear()
+                        playInfoList.addAll(list)
                         val playList = transformMediaMetadataCompatList(list)
                         audioPlayer.setData(this@MainActivity, playList)
                     }
@@ -118,6 +130,7 @@ class MainActivity : AppCompatActivity() {
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, it.songUrl)
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, it.songName)
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, it.songCover)
+                .putString(MediaMetadataCompat.METADATA_KEY_DURATION, it.duration.toString())
                 .build()
             metadataCompatList.add(element)
         }

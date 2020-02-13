@@ -3,23 +3,24 @@ package com.atlasv.android.music.music_player.service
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.atlasv.android.music.music_player.exo.ExoPlayback
 import com.atlasv.android.music.music_player.playback.PlaybackState
+import java.util.*
 
 /**
  * Created by woyanan on 2020-02-12
  */
 class MediaSessionCallback(
     context: Context,
-    private val mediaSession: MediaSessionCompat
+    private val mediaSession: MediaSessionCompat,
+    private val playList: ArrayList<MediaSessionCompat.QueueItem>,
+    private val playbackState: PlaybackState
 ) : MediaSessionCompat.Callback() {
 
-    //UI可能被销毁,Service需要保存播放列表,并处理循环模式
-    private val playList = arrayListOf<MediaSessionCompat.QueueItem>()
     private var currentPosition: Int = 0
-    private val playbackState = PlaybackState()
     private val playback = ExoPlayback.getInstance(context)
 
     override fun onPlay() {
@@ -34,16 +35,14 @@ class MediaSessionCallback(
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
         super.onPlayFromMediaId(mediaId, extras)
         mediaId?.apply {
-            playList.forEachIndexed { index, queueItem ->
-                if (queueItem.description.mediaId == mediaId) {
-                    playback.play(queueItem.description, true)
-                    currentPosition = index
-                    playbackState.setState(
-                        PlaybackStateCompat.STATE_PLAYING,
-                        playback.currentStreamPosition, mediaSession
-                    )
-                    return
-                }
+            playList.find { mediaId == it.description.mediaId }?.let {
+                playback.play(it.description, true)
+                currentPosition = playList.indexOf(it)
+                playbackState.setState(
+                    PlaybackStateCompat.STATE_PLAYING,
+                    playback.currentStreamPosition, mediaSession
+                )
+                setMetadata(it.description)
             }
         }
     }
@@ -55,6 +54,7 @@ class MediaSessionCallback(
                 MediaSessionCompat.QueueItem(description, description.hashCode().toLong())
             )
         }
+        mediaSession.setQueue(playList)
     }
 
     override fun onRemoveQueueItem(description: MediaDescriptionCompat?) {
@@ -62,18 +62,23 @@ class MediaSessionCallback(
         playList.remove(
             MediaSessionCompat.QueueItem(description, description.hashCode().toLong())
         )
+        mediaSession.setQueue(playList)
     }
 
     override fun onSkipToPrevious() {
         super.onSkipToPrevious()
         currentPosition = if (currentPosition > 0) currentPosition - 1 else playList.size - 1
-        playback.play(playList[currentPosition].description, true)
+        val description = playList[currentPosition].description
+        playback.play(description, true)
+        setMetadata(description)
     }
 
     override fun onSkipToNext() {
         super.onSkipToNext()
         currentPosition = (++currentPosition % playList.size)
-        playback.play(playList[currentPosition].description, true)
+        val description = playList[currentPosition].description
+        playback.play(description, true)
+        setMetadata(description)
     }
 
     override fun onSeekTo(pos: Long) {
@@ -96,6 +101,18 @@ class MediaSessionCallback(
         playbackState.setState(
             PlaybackStateCompat.STATE_STOPPED,
             playback.currentStreamPosition, mediaSession
+        )
+    }
+
+    private fun setMetadata(description: MediaDescriptionCompat?) {
+        mediaSession.setMetadata(
+            MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, description?.title.toString())
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI,
+                    description?.iconUri.toString()
+                )
+                .build()
         )
     }
 }

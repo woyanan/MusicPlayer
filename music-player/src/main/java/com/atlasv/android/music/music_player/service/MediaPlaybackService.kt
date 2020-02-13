@@ -7,6 +7,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.atlasv.android.music.music_player.R
+import com.atlasv.android.music.music_player.playback.PlaybackState
 
 /**
  * Created by woyanan on 2020-02-10
@@ -19,6 +20,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var packageValidator: PackageValidator
+    //UI可能被销毁,Service需要保存播放列表,并处理循环模式
+    private val playList = arrayListOf<MediaSessionCompat.QueueItem>()
+    private val playbackState = PlaybackState()
 
     override fun onCreate() {
         super.onCreate()
@@ -29,7 +33,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             }
         sessionToken = mediaSession.sessionToken
         mediaSession.setSessionActivity(getPendingIntent())
-        mediaSession.setCallback(MediaSessionCallback(this, mediaSession))
+        mediaSession.setCallback(MediaSessionCallback(this, mediaSession, playList, playbackState))
         mediaSession.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                     or MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
@@ -48,7 +52,14 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        //no-op
+        result.detach()
+        val list = playList.map {
+            MediaBrowserCompat.MediaItem(
+                it.description,
+                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+            )
+        }
+        result.sendResult(list as MutableList<MediaBrowserCompat.MediaItem>?)
     }
 
     override fun onGetRoot(
