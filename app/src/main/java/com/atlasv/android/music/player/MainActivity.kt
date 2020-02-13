@@ -66,17 +66,19 @@ class MainActivity : AppCompatActivity() {
             })
 
         timer.setUpdateProgress(Runnable {
-            val position = audioPlayer.getCurrentStreamPosition()
             val duration = audioPlayer.getDuration()
-            val buffered = audioPlayer.getBufferedPosition()
-            if (seekBar.max.toLong() != duration) {
-                seekBar.max = duration.toInt()
+            if (duration > 0) {
+                val position = audioPlayer.getCurrentStreamPosition()
+                val buffered = audioPlayer.getBufferedPosition()
+                if (seekBar.max.toLong() != duration) {
+                    seekBar.max = duration.toInt()
+                }
+                seekBar.progress = position.toInt()
+                seekBar.secondaryProgress = buffered.toInt()
+                progress.text =
+                    Common.formatPlayTime(position) + "/" + Common.formatPlayTime(duration)
+                time.text = Common.formatPlayTime(duration)
             }
-            seekBar.progress = position.toInt()
-            seekBar.secondaryProgress = buffered.toInt()
-            progress.text =
-                Common.formatPlayTime(position) + "/" + Common.formatPlayTime(duration)
-            time.text = Common.formatPlayTime(duration)
         })
 
         seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
