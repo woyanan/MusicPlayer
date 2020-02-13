@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                         playInfoList.clear()
                         playInfoList.addAll(list)
                         val playList = transformMediaMetadataCompatList(list)
-                        audioPlayer.setData(this@MainActivity, playList)
+                        audioPlayer.bindData(this@MainActivity, playList)
                     }
                 }
             }

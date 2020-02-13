@@ -63,7 +63,7 @@ class AudioPlayer(private val context: Context) {
         }
     }
 
-    fun setData(owner: LifecycleOwner, playList: ArrayList<MediaMetadataCompat>) {
+    fun bindData(owner: LifecycleOwner, playList: ArrayList<MediaMetadataCompat>) {
         if (isConnected.value == true) {
             addQueueItem(playList)
             subscribe()
@@ -78,6 +78,7 @@ class AudioPlayer(private val context: Context) {
     }
 
     private fun subscribe() {
+        unsubscribe()
         mediaBrowser.subscribe(
             mediaBrowser.root,
             object : MediaBrowserCompat.SubscriptionCallback() {
@@ -92,8 +93,8 @@ class AudioPlayer(private val context: Context) {
             })
     }
 
-    fun unsubscribe(callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.unsubscribe(mediaBrowser.root, callback)
+    fun unsubscribe() {
+        mediaBrowser.unsubscribe(mediaBrowser.root)
     }
 
     private fun addQueueItem(playList: ArrayList<MediaMetadataCompat>) {

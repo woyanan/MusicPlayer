@@ -15,15 +15,16 @@ import com.google.android.exoplayer2.audio.AudioAttributes
 open class ExoPlayback internal constructor(
     private val context: Context
 ) {
-    private val eventListener by lazy {
-        ExoPlayerEventListener()
-    }
     private var cacheManager = CacheManager(context, true, null)
     private val sourceManager: ExoSourceManager by lazy {
         ExoSourceManager(context, cacheManager)
     }
 
     private var exoPlayer: SimpleExoPlayer? = null
+    private val eventListener by lazy {
+        ExoPlayerEventListener()
+    }
+    private var callback: IEventCallback? = null
     private var currentMediaId: String? = null
 
     private val state: Int
@@ -51,6 +52,10 @@ open class ExoPlayback internal constructor(
 
     val duration: Long
         get() = exoPlayer?.duration ?: -1
+
+    fun setEventCallback(callback: IEventCallback?) {
+        this.callback = callback
+    }
 
     fun play(mediaResource: MediaDescriptionCompat, isPlayWhenReady: Boolean) {
         if (mediaResource.mediaId.isNullOrEmpty() || mediaResource.mediaUri == null) {
@@ -113,11 +118,18 @@ open class ExoPlayback internal constructor(
 
     private inner class ExoPlayerEventListener : Player.EventListener {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-
+            when (playbackState) {
+                Player.STATE_IDLE, Player.STATE_BUFFERING, Player.STATE_READY -> {
+                    callback?.onPlaybackStatusChanged(state)
+                }
+                Player.STATE_ENDED -> {
+                    callback?.onCompletion()
+                }
+            }
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
-
+            callback?.onError()
         }
     }
 

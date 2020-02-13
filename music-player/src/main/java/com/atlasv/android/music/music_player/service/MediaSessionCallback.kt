@@ -7,6 +7,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.atlasv.android.music.music_player.exo.ExoPlayback
+import com.atlasv.android.music.music_player.exo.IEventCallback
 import com.atlasv.android.music.music_player.playback.PlaybackState
 import java.util.*
 
@@ -20,8 +21,45 @@ class MediaSessionCallback(
     private val playbackState: PlaybackState
 ) : MediaSessionCompat.Callback() {
 
-    private var currentPosition: Int = 0
     private val playback = ExoPlayback.getInstance(context)
+    private var currentPosition: Int = 0
+    private var repeatMode: Int = PlaybackStateCompat.REPEAT_MODE_NONE
+
+    init {
+        playback.setEventCallback(object : IEventCallback {
+            override fun onPlaybackStatusChanged(state: Int) {
+                playbackState.setState(state, playback.currentStreamPosition, mediaSession)
+            }
+
+            override fun onCompletion() {
+                playbackState.setState(
+                    PlaybackStateCompat.STATE_PAUSED,
+                    playback.currentStreamPosition, mediaSession
+                )
+                when (repeatMode) {
+                    PlaybackStateCompat.REPEAT_MODE_ONE -> {
+                        onPlay()
+                    }
+                    PlaybackStateCompat.REPEAT_MODE_ALL, PlaybackStateCompat.REPEAT_MODE_NONE -> {
+                        onSkipToNext()
+                    }
+                }
+            }
+
+            override fun onError() {
+                playbackState.setState(
+                    PlaybackStateCompat.STATE_ERROR,
+                    playback.currentStreamPosition,
+                    mediaSession
+                )
+            }
+        })
+    }
+
+    override fun onSetRepeatMode(repeatMode: Int) {
+        super.onSetRepeatMode(repeatMode)
+        this.repeatMode = repeatMode
+    }
 
     override fun onPlay() {
         super.onPlay()
