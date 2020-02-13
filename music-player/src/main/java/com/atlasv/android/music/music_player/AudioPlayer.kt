@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.atlasv.android.music.music_player.exo.ExoPlayback
+import com.atlasv.android.music.music_player.notification.NotificationVO
 import com.atlasv.android.music.music_player.service.MediaPlaybackService
 
 /**
@@ -34,6 +35,8 @@ class AudioPlayer(private val context: Context) {
     var playList = MutableLiveData<MutableList<MediaDescriptionCompat>>()
     //当前播放数据
     var currentMetaData = MutableLiveData<MediaMetadataCompat>()
+    //更新通知栏
+    val notificationVO = MutableLiveData<NotificationVO>()
 
     fun init() {
         mediaBrowser = MediaBrowserCompat(
@@ -146,10 +149,12 @@ class AudioPlayer(private val context: Context) {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             playbackState.postValue(state)
+            notificationVO.postValue(NotificationVO(mediaController.metadata, state))
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             currentMetaData.postValue(metadata)
+            notificationVO.postValue(NotificationVO(metadata, mediaController.playbackState))
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
