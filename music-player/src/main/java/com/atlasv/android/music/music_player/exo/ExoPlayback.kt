@@ -16,8 +16,8 @@ open class ExoPlayback internal constructor(
     private val context: Context
 ) {
     private var cacheManager = CacheManager(context, true, null)
-    private val sourceManager: ExoSourceManager by lazy {
-        ExoSourceManager(context, cacheManager)
+    private val sourceManager: ExoSourceFactory by lazy {
+        ExoSourceFactory(context, cacheManager)
     }
 
     private var exoPlayer: SimpleExoPlayer? = null

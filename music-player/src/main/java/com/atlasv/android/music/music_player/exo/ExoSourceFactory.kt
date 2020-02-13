@@ -14,7 +14,7 @@ import com.google.android.exoplayer2.util.Util
 /**
  * Created by woyanan on 2020-02-10
  */
-class ExoSourceManager constructor(
+class ExoSourceFactory constructor(
     private val context: Context, private val cacheManager: CacheManager
 ) {
     private var contentUri: Uri? = null

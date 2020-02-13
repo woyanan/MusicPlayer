@@ -52,7 +52,7 @@ class CacheManager constructor(
             if (!isLocked) {
                 downloadCache = SimpleCache(
                     downloadContentDirectory,
-                    LeastRecentlyUsedCacheEvictor(ExoSourceManager.DEFAULT_MAX_SIZE.toLong())
+                    LeastRecentlyUsedCacheEvictor(ExoSourceFactory.DEFAULT_MAX_SIZE.toLong())
                 )
             }
         }
