@@ -8,4 +8,10 @@
         <signature name=\"%1$s\" package=\"%2$s\">\n\t<key>%3$s</key>\n</signature>\n
         ]]>
     </string>
+    <string name="notification_channel" />
+    <string name="notification_channel_description" />
+    <string name="label_pause" />
+    <string name="label_play" />
+    <string name="label_previous" />
+    <string name="label_next" />
 </resources>
