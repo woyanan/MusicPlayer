@@ -1,19 +1,3 @@
-/*
- * Copyright 2018 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.atlasv.android.music.music_player.service
 
 import android.Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE
@@ -37,18 +21,6 @@ import java.io.IOException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
-/**
- * Validates that the calling package is authorized to browse a [MediaBrowserServiceCompat].
- *
- * The list of allowed signing certificates and their corresponding package names is defined in
- * res/xml/allowed_media_browser_callers.xml.
- *
- * If you want to add a new caller to allowed_media_browser_callers.xml and you don't know
- * its signature, this class will print to logcat (INFO level) a message with the proper
- * xml tags to add to allow the caller.
- *
- * For more information, see res/xml/allowed_media_browser_callers.xml.
- */
 class PackageValidator(context: Context, @XmlRes xmlResId: Int) {
     private val context: Context
     private val packageManager: PackageManager
@@ -67,33 +39,12 @@ class PackageValidator(context: Context, @XmlRes xmlResId: Int) {
         platformSignature = getSystemSignature()
     }
 
-    /**
-     * Checks whether the caller attempting to connect to a [MediaBrowserServiceCompat] is known.
-     * See [MusicService.onGetRoot] for where this is utilized.
-     *
-     * @param callingPackage The package name of the caller.
-     * @param callingUid The user id of the caller.
-     * @return `true` if the caller is known, `false` otherwise.
-     */
     fun isKnownCaller(callingPackage: String, callingUid: Int): Boolean {
         // If the caller has already been checked, return the previous result here.
         val (checkedUid, checkResult) = callerChecked[callingPackage] ?: Pair(0, false)
         if (checkedUid == callingUid) {
             return checkResult
         }
-
-        /**
-         * Because some of these checks can be slow, we save the results in [callerChecked] after
-         * this code is run.
-         *
-         * In particular, there's little reason to recompute the calling package's certificate
-         * signature (SHA-256) each call.
-         *
-         * This is safe to do as we know the UID matches the package's UID (from the check above),
-         * and app UIDs are set at install time. Additionally, a package name + UID is guaranteed to
-         * be constant until a reboot. (After a reboot then a previously assigned UID could be
-         * reassigned.)
-         */
 
         // Build the caller info for the rest of the checks here.
         val callerPackageInfo = buildCallerInfo(callingPackage)
